@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native'
+import { Animated, StyleSheet } from 'react-native'
 import View from 'react-native-ui-lib/view';
 import Text from 'react-native-ui-lib/text';
 import React, { useEffect, useState } from 'react';
@@ -7,10 +7,23 @@ import DealList from './DealList';
 import DealDetail from './DealDetail';
 
 const App = () => {
+
+const titleXPos = new Animated.Value(0);
 const [dealList, setDealList] = useState([]);
 const [currentDeal, setCurrentDeal] = useState(null);
 
+const animateTitle = (direction = 1) => {
+	Animated.spring(
+		titleXPos,
+		{
+			toValue: direction * -100,
+			useNativeDriver: false,
+		}
+	).start(() => animateTitle(-1 * direction));
+};
+
 useEffect(() => {
+	animateTitle();
 	const fetchDeals = async () => {
 		const deals = await fetchInitialDeals();
 		setDealList(deals.products);
@@ -36,9 +49,9 @@ return (
 			<DealDetail deal={findCurrentDeal()} onBack={unSetCurrentDealFunc} />
 			: dealList.length > 0 ? 
 				<DealList deals={dealList} onItemPress={setCurrentDealFunc} /> 
-				: <View style={styles.container}>
+				: <Animated.View style={[{left: titleXPos}, styles.container]}>
 					<Text style={styles.header}>Bakesale</Text>
-				</View>
+				</Animated.View>
 		}
 	</>
 );
